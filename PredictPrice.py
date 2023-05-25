@@ -1,3 +1,4 @@
+import os
 import pandas as pd
 import numpy as np
 from keras.models import load_model
@@ -5,14 +6,16 @@ from PIL import Image
 from sklearn.preprocessing import LabelEncoder
 
 # Load the saved model
-model = load_model('models')
+model = load_model('model')
 
 # Define the directories and file paths for new data
-new_image_dir = './data/images/'
+new_image_dir = './cropped/'
 new_data_path = './data/cars.csv'
 
 # Load the new data
 new_df = pd.read_csv(new_data_path)
+new_df = new_df[new_df['image'].map(lambda x: os.path.isfile(new_image_dir + x))]
+price = new_df['price'].str.replace(' ', '').astype(float).to_numpy()
 
 # Perform the same preprocessing steps as before
 selected_columns = ['image', 'kilometrage', 'make_date', 'engine']
@@ -20,13 +23,13 @@ new_df = new_df[selected_columns]
 new_df['kilometrage'] = new_df['kilometrage'].str.replace(' ', '').astype(float)
 new_df['make_date'] = new_df['make_date'].str.split('-').str[0].astype(int)
 new_df['engine'] = new_df['engine'].str.extract(r'AG \((\d+)kW\)').astype(float)
-new_df=new_df.head(1)
+new_df=new_df.head(100)
 print(new_df)
 # Load and preprocess the new images
 new_images = []
 for image_path in new_df['image']:
     img = Image.open(new_image_dir + image_path)
-    img = img.resize((224, 224))
+    img = img.resize((128, 128))
     img = np.array(img)
     img = img / 255.0  # Normalize the image
     new_images.append(img)
@@ -40,4 +43,4 @@ predictions = model.predict([new_images, new_numeric_data])
 
 # Print the predicted prices
 for i, prediction in enumerate(predictions):
-    print(f"Prediction for data point {i + 1}: {prediction[0]}")
+    print(f"Prediction for data point {i + 1}: {prediction[0]} (was {price[i]})")
