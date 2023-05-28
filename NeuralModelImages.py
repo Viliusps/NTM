@@ -71,6 +71,6 @@ numeric_data.drop('image', axis=1, inplace=True)
 numeric_data = numeric_data.values.astype(np.float32)
 
 csv_logger = CSVLogger("epochs_logs.txt", separator='\t', append=True)
-model.fit([image_data_generator.next()[0], numeric_data], df['price'], epochs=500, batch_size=30, verbose=1, callbacks=[csv_logger])
+model.fit([image_data_generator.next()[0], numeric_data], df['price'], epochs=250, batch_size=30, verbose=1, callbacks=[csv_logger])
 
 model.save('model')

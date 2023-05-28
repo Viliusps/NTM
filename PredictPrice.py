@@ -2,10 +2,10 @@ import pandas as pd
 import numpy as np
 from keras.models import load_model
 from PIL import Image
-from sklearn.preprocessing import LabelEncoder
+from sklearn.preprocessing import MinMaxScaler
 
 # Load the saved model
-model = load_model('models')
+model = load_model('modelWithoutImages')
 
 # Define the directories and file paths for new data
 new_image_dir = './data/images/'
@@ -20,8 +20,12 @@ new_df = new_df[selected_columns]
 new_df['kilometrage'] = new_df['kilometrage'].str.replace(' ', '').astype(float)
 new_df['make_date'] = new_df['make_date'].str.split('-').str[0].astype(int)
 new_df['engine'] = new_df['engine'].str.extract(r'AG \((\d+)kW\)').astype(float)
-new_df=new_df.head(1)
-print(new_df)
+new_df.dropna(inplace=True)
+new_df = new_df.head(100)
+
+scaler = MinMaxScaler()
+new_df[selected_columns[1:]] = scaler.fit_transform(new_df[selected_columns[1:]])
+
 # Load and preprocess the new images
 new_images = []
 for image_path in new_df['image']:
@@ -36,7 +40,7 @@ new_images = np.array(new_images)
 new_numeric_data = new_df.loc[:, selected_columns[1:]].values.astype(np.float32)
 
 # Perform prediction on the new data
-predictions = model.predict([new_images, new_numeric_data])
+predictions = model.predict(new_numeric_data)
 
 # Print the predicted prices
 for i, prediction in enumerate(predictions):

@@ -16,7 +16,7 @@ function App() {
 
     const handleSubmit = async () => {
         await axios.post('http://localhost:5000/predict', {
-            image: uploadedFile[0],
+            //image: uploadedFile[0],
             kilometrage: kilometrage,
             make_date: makeDate,
             engine: engine
