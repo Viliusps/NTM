@@ -1,12 +1,12 @@
 import pandas as pd
 import keras
-from keras.layers import Input, Dropout
-from sklearn.model_selection import train_test_split
+from keras.layers import Dropout
 from sklearn.preprocessing import MinMaxScaler
 
 data_path = './data/cars.csv'
 data_path1 = './data/cars1.csv'
-df = pd.concat(map(pd.read_csv, [data_path, data_path1]))
+data_path2 = './data/cars2.csv'
+df = pd.concat(map(pd.read_csv, [data_path, data_path1, data_path2]))
 
 selected_columns = ['price', 'kilometrage', 'make_date', 'engine']
 x_columns = ['kilometrage', 'make_date', 'engine']
@@ -19,28 +19,34 @@ df.dropna(inplace=True)
 X = df[x_columns]
 y = df['price']
 
+# Check for outliers
+Q1 = X.quantile(0.25)
+Q3 = X.quantile(0.75)
+IQR = Q3 - Q1
+outliers = ((X < (Q1 - 1.5 * IQR)) | (X > (Q3 + 1.5 * IQR))).any(axis=1)
+df = df[~outliers]
+
 # Normalize the input features
 scaler = MinMaxScaler()
 X = scaler.fit_transform(X)
 
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
-
 # Create the Keras model
 model = keras.Sequential([
-    keras.layers.Dense(64, input_dim=3, activation='relu'),
-    keras.layers.Dense(64, activation='relu'),
+    keras.layers.Dense(128, input_dim=3, activation='relu'),
+    keras.layers.Dense(256, activation='relu'),
+    keras.layers.Dense(128, activation='relu'),
     Dropout(0.2),
     keras.layers.Dense(1),
 ])
 
 # Compile the model
-model.compile(loss='mean_squared_error', optimizer='adam', metrics=['mae'])
+model.compile(loss='mean_squared_error', optimizer=keras.optimizers.Adam(), metrics=['mae'])
 
 # Train the model
-model.fit(X_train, y_train, epochs=1000, batch_size=32, verbose=1)
+model.fit(X, y, epochs=1000, batch_size=32, verbose=2)
 
 model.save('modelWithoutImages')
 
 # Evaluate the model
-mse = model.evaluate(X_test, y_test)
+mse = model.evaluate(X, y)
 print('Mean Squared Error:', mse)

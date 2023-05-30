@@ -28,7 +28,7 @@ def wait_for_element_to_appear(page, element):
   return True
 
 def get_car_urls_of_page(page, page_number):
-  page.goto(f'https://m.autoplius.lt/skelbimai/naudoti-automobiliai?qt=&qt_autocomplete=&page_nr={page_number}&category_id=2&make_id%5B97%5D=1313')
+  page.goto(f'https://m.autoplius.lt/skelbimai/naudoti-automobiliai?qt=&qt_autocomplete=&page_nr={page_number}&category_id=2&make_id%5B97%5D=1318')
   wait_for_element_to_appear(page, '.list-items')
   content = page.content()
   soup = BeautifulSoup(content, 'html.parser')
@@ -94,8 +94,8 @@ if __name__ == '__main__':
   sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding='utf-8', errors='replace')
 
   df = pd.DataFrame({})
-  if os.path.exists('cars.csv'):
-    df = pd.read_csv('cars.csv')
+  if os.path.exists('cars2.csv'):
+    df = pd.read_csv('cars2.csv')
 
   with sync_playwright() as p:
     chrome_executable_path = 'C:/Program Files (x86)/Google/Chrome/Application/chrome.exe'
@@ -113,9 +113,9 @@ if __name__ == '__main__':
         if df.empty or not df['id'].isin([car['id']]).any():
           image_response = requests.get(photoSrc)
           filename = car['image']
-          with open(f'images/{filename}', 'wb') as image_file:
+          with open(f'data/images/{filename}', 'wb') as image_file:
             image_file.write(image_response.content)
           df = df.append(car, ignore_index=True)
-          df.to_csv('cars.csv', index=False)
+          df.to_csv('cars2.csv', index=False)
     
     browser.close()
